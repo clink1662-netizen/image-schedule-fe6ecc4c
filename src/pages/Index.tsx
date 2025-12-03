@@ -242,9 +242,18 @@ const Index = () => {
         toast.success('Rejoined your live stream');
       } catch (error: any) {
         console.error('Error rejoining stream:', error);
-        // If rejoin fails, clear state and let user create new stream
+        // End the orphaned stream and let user start fresh
+        try {
+          await supabase.functions.invoke('stream-management', {
+            body: { action: 'end', streamId: myActiveStream.stream_id },
+          });
+        } catch (endError) {
+          console.error('Error ending orphaned stream:', endError);
+        }
         setMyActiveStream(null);
-        toast.error('Failed to rejoin stream. You can start a new one.');
+        fetchLiveStreams();
+        setIsGoLiveDialogOpen(true);
+        toast.info('Previous stream closed. Start a new one!');
       }
     } else {
       // Open dialog to create new stream
