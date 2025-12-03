@@ -103,6 +103,41 @@ serve(async (req) => {
       );
     }
 
+    if (action === 'rejoin') {
+      // Get user's active stream and generate new token
+      const { data: activeStream, error: fetchError } = await supabase
+        .from('live_stream')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
+
+      if (fetchError || !activeStream) {
+        throw new Error('No active stream found');
+      }
+
+      // Generate new token for the existing stream
+      const payload = {
+        user_id: user.id,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // 24 hours
+      };
+
+      const streamToken = await generateStreamToken(payload, GETSTREAM_API_SECRET);
+
+      console.log('Rejoining stream:', activeStream.stream_id);
+
+      return new Response(
+        JSON.stringify({
+          streamId: activeStream.stream_id,
+          token: streamToken,
+          apiKey: GETSTREAM_API_KEY,
+          data: activeStream,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (action === 'end') {
       // Update stream status to inactive
       const { error: updateError } = await supabase

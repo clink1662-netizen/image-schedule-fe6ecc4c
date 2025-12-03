@@ -63,6 +63,7 @@ const Index = () => {
   const [broadcastData, setBroadcastData] = useState<any>(null);
   const [isViewing, setIsViewing] = useState(false);
   const [viewerData, setViewerData] = useState<any>(null);
+  const [myActiveStream, setMyActiveStream] = useState<LiveStream | null>(null);
   const navigate = useNavigate();
   const { canInstall, handleInstall } = useInstallPWA();
 
@@ -173,6 +174,12 @@ const Index = () => {
       if (error) throw error;
 
       setLiveStreams(data || []);
+      
+      // Check if current user has an active stream
+      if (user) {
+        const userStream = (data || []).find(s => s.user_id === user.id);
+        setMyActiveStream(userStream || null);
+      }
     } catch (error: any) {
       console.error("Error loading live streams:", error);
     }
@@ -206,6 +213,33 @@ const Index = () => {
   const leaveStream = () => {
     setIsViewing(false);
     setViewerData(null);
+  };
+
+  const handleGoLiveClick = async () => {
+    if (myActiveStream) {
+      // Rejoin existing stream
+      try {
+        const { data, error } = await supabase.functions.invoke('stream-management', {
+          body: { action: 'rejoin' },
+        });
+
+        if (error) throw error;
+
+        setBroadcastData({
+          streamId: data.streamId,
+          token: data.token,
+          apiKey: data.apiKey,
+        });
+        setIsBroadcasting(true);
+        toast.success('Rejoined your live stream');
+      } catch (error: any) {
+        console.error('Error rejoining stream:', error);
+        toast.error('Failed to rejoin stream');
+      }
+    } else {
+      // Open dialog to create new stream
+      setIsGoLiveDialogOpen(true);
+    }
   };
 
   const filteredEvents = events.filter((event) => {
@@ -303,10 +337,11 @@ const Index = () => {
         </Badge>
         
         <Button 
-          onClick={() => setIsGoLiveDialogOpen(true)}
+          onClick={handleGoLiveClick}
           className="rounded-full px-4 py-2 text-sm font-medium"
+          variant={myActiveStream ? "secondary" : "default"}
         >
-          Go Live
+          {myActiveStream ? "Continue Live" : "Go Live"}
         </Button>
       </div>
 
@@ -410,6 +445,7 @@ const Index = () => {
           onEndStream={() => {
             setIsBroadcasting(false);
             setBroadcastData(null);
+            setMyActiveStream(null);
             fetchLiveStreams();
           }}
         />
