@@ -201,6 +201,7 @@ const Index = () => {
         token: data.token,
         apiKey: data.apiKey,
         userId: data.userId,
+        dbStreamId: stream.id,
         title: stream.title,
       });
       setIsViewing(true);
@@ -237,6 +238,7 @@ const Index = () => {
           streamId: data.streamId,
           token: data.token,
           apiKey: data.apiKey,
+          dbStreamId: data.dbStreamId,
         });
         setIsBroadcasting(true);
         toast.success('Rejoined your live stream');
@@ -450,7 +452,12 @@ const Index = () => {
         open={isGoLiveDialogOpen}
         onOpenChange={setIsGoLiveDialogOpen}
         onStreamCreated={(data) => {
-          setBroadcastData(data);
+          setBroadcastData({
+            streamId: data.streamId,
+            token: data.token,
+            apiKey: data.apiKey,
+            dbStreamId: data.dbStreamId,
+          });
           setIsBroadcasting(true);
           fetchLiveStreams();
         }}
@@ -461,6 +468,7 @@ const Index = () => {
           streamId={broadcastData.streamId}
           token={broadcastData.token}
           apiKey={broadcastData.apiKey}
+          dbStreamId={broadcastData.dbStreamId}
           onEndStream={() => {
             setIsBroadcasting(false);
             setBroadcastData(null);
@@ -476,6 +484,7 @@ const Index = () => {
           token={viewerData.token}
           apiKey={viewerData.apiKey}
           userId={viewerData.userId}
+          dbStreamId={viewerData.dbStreamId}
           onLeave={leaveStream}
         />
       )}

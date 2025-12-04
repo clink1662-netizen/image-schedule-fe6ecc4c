@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { StreamChat } from "./StreamChat";
 
 interface BroadcasterInterfaceProps {
   streamId: string;
   token: string;
   apiKey: string;
+  dbStreamId: string; // Database UUID for chat
   onEndStream: () => void;
 }
 
@@ -75,27 +77,35 @@ const BroadcasterControls = ({ onEndStream }: { onEndStream: () => void }) => {
   );
 };
 
-const StreamView = ({ onEndStream }: { onEndStream: () => void }) => {
+const StreamView = ({ onEndStream, dbStreamId }: { onEndStream: () => void; dbStreamId: string }) => {
   const { useLocalParticipant } = useCallStateHooks();
   const localParticipant = useLocalParticipant();
 
   return (
     <div className="relative w-full h-screen bg-background">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 md:right-80">
         {localParticipant && (
           <ParticipantView
             participant={localParticipant}
             ParticipantViewUI={null}
           />
         )}
+        <div className="absolute top-4 left-4 bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-full font-semibold flex items-center gap-2 z-10">
+          <span className="h-3 w-3 bg-white rounded-full animate-pulse" />
+          LIVE
+        </div>
+        <BroadcasterControls onEndStream={onEndStream} />
       </div>
       
-      <div className="absolute top-4 left-4 bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-full font-semibold flex items-center gap-2">
-        <span className="h-3 w-3 bg-white rounded-full animate-pulse" />
-        LIVE
+      {/* Chat sidebar */}
+      <div className="hidden md:block absolute top-0 right-0 w-80 h-full p-2">
+        <StreamChat streamId={dbStreamId} />
       </div>
-
-      <BroadcasterControls onEndStream={onEndStream} />
+      
+      {/* Mobile chat overlay */}
+      <div className="md:hidden absolute bottom-20 left-2 right-2 h-48">
+        <StreamChat streamId={dbStreamId} />
+      </div>
     </div>
   );
 };
@@ -104,6 +114,7 @@ export const BroadcasterInterface = ({
   streamId,
   token,
   apiKey,
+  dbStreamId,
   onEndStream,
 }: BroadcasterInterfaceProps) => {
   const [client, setClient] = useState<StreamVideoClient | null>(null);
@@ -209,7 +220,7 @@ export const BroadcasterInterface = ({
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <StreamView onEndStream={handleEndStream} />
+        <StreamView onEndStream={handleEndStream} dbStreamId={dbStreamId} />
       </StreamCall>
     </StreamVideo>
   );

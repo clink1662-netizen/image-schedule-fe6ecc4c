@@ -9,12 +9,14 @@ import {
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { StreamChat } from './StreamChat';
 
 interface ViewerInterfaceProps {
   streamId: string;
   token: string;
   apiKey: string;
   userId: string;
+  dbStreamId: string; // Database UUID for chat
   onLeave: () => void;
 }
 
@@ -54,6 +56,7 @@ export const ViewerInterface = ({
   token, 
   apiKey, 
   userId,
+  dbStreamId,
   onLeave 
 }: ViewerInterfaceProps) => {
   const [client, setClient] = useState<StreamVideoClient | null>(null);
@@ -141,7 +144,21 @@ export const ViewerInterface = ({
               <X className="h-5 w-5" />
             </Button>
           </div>
-          <StreamView />
+          
+          {/* Video area */}
+          <div className="absolute inset-0 md:right-80">
+            <StreamView />
+          </div>
+          
+          {/* Chat sidebar */}
+          <div className="hidden md:block absolute top-0 right-0 w-80 h-full p-2">
+            <StreamChat streamId={dbStreamId} />
+          </div>
+          
+          {/* Mobile chat overlay */}
+          <div className="md:hidden absolute bottom-4 left-2 right-2 h-48">
+            <StreamChat streamId={dbStreamId} />
+          </div>
         </div>
       </StreamCall>
     </StreamVideo>

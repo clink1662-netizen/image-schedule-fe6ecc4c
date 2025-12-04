@@ -97,6 +97,7 @@ serve(async (req) => {
           streamId: uniqueStreamId,
           token: streamToken,
           apiKey: GETSTREAM_API_KEY,
+          dbStreamId: streamData.id,
           data: streamData,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -140,6 +141,7 @@ serve(async (req) => {
           streamId: activeStream.stream_id,
           token: streamToken,
           apiKey: GETSTREAM_API_KEY,
+          dbStreamId: activeStream.id,
           data: activeStream,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
