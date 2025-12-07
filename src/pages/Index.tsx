@@ -556,7 +556,7 @@ const Index = () => {
       {viewingCoachVideo && (
         <SimulatedLiveViewer
           video={viewingCoachVideo}
-          onEnd={() => setViewingCoachVideo(null)}
+          onExit={() => setViewingCoachVideo(null)}
           isHost={false}
         />
       )}
