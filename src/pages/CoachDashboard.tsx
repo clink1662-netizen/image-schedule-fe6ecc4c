@@ -173,7 +173,8 @@ export default function CoachDashboard() {
     return (
       <SimulatedLiveViewer
         video={viewingVideo}
-        onEnd={() => handleEndLive(viewingVideo.id)}
+        onExit={() => setViewingVideo(null)}
+        onEndLive={() => handleEndLive(viewingVideo.id)}
         isHost={true}
       />
     );

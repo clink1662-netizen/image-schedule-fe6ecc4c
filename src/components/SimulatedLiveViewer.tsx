@@ -23,11 +23,12 @@ interface CoachVideo {
 
 interface SimulatedLiveViewerProps {
   video: CoachVideo;
-  onEnd: () => void;
+  onExit: () => void;
+  onEndLive?: () => void;
   isHost?: boolean;
 }
 
-export const SimulatedLiveViewer = ({ video, onEnd, isHost = false }: SimulatedLiveViewerProps) => {
+export const SimulatedLiveViewer = ({ video, onExit, onEndLive, isHost = false }: SimulatedLiveViewerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -75,8 +76,16 @@ export const SimulatedLiveViewer = ({ video, onEnd, isHost = false }: SimulatedL
   };
 
   const handleVideoEnd = () => {
-    if (isHost) {
-      onEnd();
+    // Video ended naturally - just loop or do nothing, don't end the live stream
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(console.error);
+    }
+  };
+
+  const handleEndLive = () => {
+    if (onEndLive) {
+      onEndLive();
     }
   };
 
@@ -103,7 +112,7 @@ export const SimulatedLiveViewer = ({ video, onEnd, isHost = false }: SimulatedL
                 variant="ghost" 
                 size="icon" 
                 className="text-white hover:bg-white/20"
-                onClick={onEnd}
+                onClick={onExit}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -148,7 +157,7 @@ export const SimulatedLiveViewer = ({ video, onEnd, isHost = false }: SimulatedL
           <div className="absolute bottom-4 left-4 right-4 md:right-auto">
             <Button 
               variant="destructive" 
-              onClick={onEnd}
+              onClick={handleEndLive}
               className="w-full md:w-auto"
             >
               End Live Stream
